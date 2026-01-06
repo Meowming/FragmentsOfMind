@@ -6,11 +6,11 @@ import { FragmentCard } from './components/FragmentCard';
 import { NarrativeLog } from './components/NarrativeLog';
 
 const INITIAL_FRAGMENTS = [
-  "He hasn't called in three days.",
-  "I know I should be stronger than this.",
-  "Maybe he's just busy with work.",
-  "I feel so small and forgotten.",
-  "The coffee is cold on my desk."
+  "He hasn't called.",
+  "I know I should be stronger than this, yet I find myself checking my phone every time the wind rattles the windowpane.",
+  "Strength is just a lie I tell my mirror before the sun goes down.",
+  "Maybe he's just busy.",
+  "I wonder if the cold coffee on my desk tastes like the regret I'm trying so hard not to swallow."
 ];
 
 const App: React.FC = () => {

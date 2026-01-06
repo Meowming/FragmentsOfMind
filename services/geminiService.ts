@@ -14,7 +14,8 @@ RULES:
 3. Update the Happiness Value based on the emotional trajectory of the sequence.
 4. Generate the next set of 4-6 text fragments that reflect the consequences of the current order.
 5. Fragments must be emotionally ambiguous and reorderable.
-6. Return output strictly in JSON.
+6. IMPORTANT: Ensure the 'next_fragments' vary significantly in length. Some should be very short (3-4 words), and some should be long and descriptive (15-25 words) to create a poetic, fragmented rhythm.
+7. Return output strictly in JSON.
 
 Happiness Evaluation:
 - Emotional coherence (clear self-understanding) = Positive (+5 to +20)
