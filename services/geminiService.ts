@@ -10,19 +10,13 @@ The player influences a love-stricken protagonist's fate by reordering her fragm
 
 RULES:
 1. Interpret the emotional and logical coherence of the sequence of text fragments provided.
-2. The sequence fundamentally alters the meaning. For example, "I love him" followed by "But it hurts" is very different from "It hurts" followed by "But I love him".
-3. Update the Happiness Value based on the emotional trajectory of the sequence.
-4. Generate the next set of 4-6 text fragments that reflect the consequences of the current order.
-5. Fragments must be emotionally ambiguous and reorderable.
-6. IMPORTANT: Ensure the 'next_fragments' vary significantly in length. Some should be very short (3-4 words), and some should be long and descriptive (15-25 words) to create a poetic, fragmented rhythm.
-7. Return output strictly in JSON.
-
-Happiness Evaluation:
-- Emotional coherence (clear self-understanding) = Positive (+5 to +20)
-- Agency (self-directed decisions) = Positive (+5 to +20)
-- Obsession, self-negation, or toxic dependency = Negative (-5 to -20)
-- Contradiction or denial = Negative (-5 to -15)
-- Acceptance without self-betrayal = Positive (+10 to +20)
+2. The sequence fundamentally alters the meaning.
+3. Update the Happiness Value based on the emotional trajectory.
+4. Generate the next set of 4-6 text fragments.
+5. IMPORTANT: Designate 1 or 2 fragments as "is_fixed: true". These are "anchors" of her psyche that she cannot currently change or move. 
+6. Anchors should ideally be the longer, more descriptive, or more overwhelming thoughts.
+7. Ensure the fragments vary significantly in length (poetic rhythm).
+8. Return output strictly in JSON.
 `;
 
 export const processFragments = async (
@@ -33,7 +27,7 @@ export const processFragments = async (
     Ordered Sequence: ${fragments.join(" -> ")}
     Current Happiness: ${currentHappiness}
     
-    Interpret this sequence and provide the delta, summary, and next fragments.
+    Interpret this sequence and provide the delta, summary, and next fragments (designate 1-2 as fixed).
   `;
 
   const response = await ai.models.generateContent({
@@ -49,7 +43,14 @@ export const processFragments = async (
           interpretation_summary: { type: Type.STRING },
           next_fragments: {
             type: Type.ARRAY,
-            items: { type: Type.STRING }
+            items: { 
+              type: Type.OBJECT,
+              properties: {
+                text: { type: Type.STRING },
+                is_fixed: { type: Type.BOOLEAN }
+              },
+              required: ["text", "is_fixed"]
+            }
           },
           tone: { type: Type.STRING }
         },
@@ -67,18 +68,18 @@ export const getEndingNarrative = async (
   history: any[]
 ): Promise<string> => {
   const prompt = `
-    The game has ended in ${isVictory ? 'Victory (Happiness > 100)' : 'Failure (Happiness < 0)'}.
-    Summary of history: ${JSON.stringify(history.slice(-3))}
-    Write a concluding narrative paragraph (approx 100 words) describing the protagonist's ${isVictory ? 'emotional stability and healthy resolution' : 'emotional collapse or destructive choice'}.
+    The game has ended in ${isVictory ? 'Victory' : 'Failure'}.
+    Summary: ${JSON.stringify(history.slice(-3))}
+    Write a concluding narrative paragraph (approx 100 words).
   `;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: [{ parts: [{ text: prompt }] }],
     config: {
-      systemInstruction: "You are a poetic narrator finishing a tragic or hopeful romantic story."
+      systemInstruction: "You are a poetic narrator finishing a romantic story."
     }
   });
 
-  return response.text || (isVictory ? "She finally found peace within herself." : "She lost herself in the echoes of what could have been.");
+  return response.text || "The story concludes...";
 };

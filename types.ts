@@ -1,7 +1,13 @@
 
+export interface Fragment {
+  text: string;
+  isFixed: boolean;
+}
+
 export interface GameState {
   happiness: number;
-  currentFragments: string[];
+  currentFragments: Fragment[];
+  roundStartFragments: Fragment[];
   history: NarrativeEntry[];
   status: 'start' | 'playing' | 'victory' | 'failure' | 'loading';
   lastInterpretation?: string;
@@ -18,7 +24,10 @@ export interface NarrativeEntry {
 export interface GeminiResponse {
   happiness_delta: number;
   interpretation_summary: string;
-  next_fragments: string[];
+  next_fragments: {
+    text: string;
+    is_fixed: boolean;
+  }[];
   tone: string;
 }
 

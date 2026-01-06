@@ -1,35 +1,39 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { GameState, NarrativeEntry } from './types';
+import React, { useState } from 'react';
+import { GameState, NarrativeEntry, Fragment } from './types';
 import { processFragments, getEndingNarrative } from './services/geminiService';
 import { FragmentCard } from './components/FragmentCard';
 import { NarrativeLog } from './components/NarrativeLog';
 
-const INITIAL_FRAGMENTS = [
-  "He hasn't called.",
-  "I know I should be stronger than this, yet I find myself checking my phone every time the wind rattles the windowpane.",
-  "Strength is just a lie I tell my mirror before the sun goes down.",
-  "Maybe he's just busy.",
-  "I wonder if the cold coffee on my desk tastes like the regret I'm trying so hard not to swallow."
+const INITIAL_FRAGMENTS: Fragment[] = [
+  { text: "He hasn't called.", isFixed: false },
+  { text: "I know I should be stronger than this, yet I find myself checking my phone every time the wind rattles the windowpane.", isFixed: true },
+  { text: "Strength is just a lie I tell my mirror before the sun goes down.", isFixed: false },
+  { text: "Maybe he's just busy.", isFixed: false },
+  { text: "I wonder if the cold coffee on my desk tastes like the regret I'm trying so hard not to swallow.", isFixed: true }
 ];
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     happiness: 50,
     currentFragments: INITIAL_FRAGMENTS,
+    roundStartFragments: INITIAL_FRAGMENTS,
     history: [],
     status: 'start',
   });
   const [endingText, setEndingText] = useState<string>('');
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
 
-  // Handle Drag and Drop
   const handleDragStart = (index: number) => {
+    if (gameState.currentFragments[index].isFixed) return;
     setDraggedItemIndex(index);
   };
 
   const handleDragEnter = (index: number) => {
     if (draggedItemIndex === null || draggedItemIndex === index) return;
+    
+    // Prevent swapping if the target is fixed
+    if (gameState.currentFragments[index].isFixed) return;
     
     const newFragments = [...gameState.currentFragments];
     const item = newFragments[draggedItemIndex];
@@ -44,18 +48,26 @@ const App: React.FC = () => {
     setDraggedItemIndex(null);
   };
 
+  const handleResetOrder = () => {
+    setGameState(prev => ({
+      ...prev,
+      currentFragments: [...prev.roundStartFragments]
+    }));
+  };
+
   const handleSubmit = async () => {
     if (gameState.status !== 'playing') return;
     
     setGameState(prev => ({ ...prev, status: 'loading' }));
     
     try {
-      const response = await processFragments(gameState.currentFragments, gameState.happiness);
+      const fragmentTexts = gameState.currentFragments.map(f => f.text);
+      const response = await processFragments(fragmentTexts, gameState.happiness);
       
       const newHappiness = Math.min(Math.max(gameState.happiness + response.happiness_delta, -10), 110);
       
       const entry: NarrativeEntry = {
-        sequence: gameState.currentFragments,
+        sequence: fragmentTexts,
         interpretation: response.interpretation_summary,
         happinessDelta: response.happiness_delta,
         newHappiness: newHappiness
@@ -70,10 +82,16 @@ const App: React.FC = () => {
         setEndingText(endNarrative);
       }
 
+      const nextFragments: Fragment[] = response.next_fragments.map(f => ({
+        text: f.text,
+        isFixed: f.is_fixed
+      }));
+
       setGameState(prev => ({
         ...prev,
         happiness: newHappiness,
-        currentFragments: response.next_fragments,
+        currentFragments: nextFragments,
+        roundStartFragments: [...nextFragments],
         history: [...prev.history, entry],
         status: newStatus,
         lastInterpretation: response.interpretation_summary,
@@ -90,6 +108,7 @@ const App: React.FC = () => {
     setGameState({
       happiness: 50,
       currentFragments: INITIAL_FRAGMENTS,
+      roundStartFragments: INITIAL_FRAGMENTS,
       history: [],
       status: 'playing',
     });
@@ -99,16 +118,18 @@ const App: React.FC = () => {
     setGameState({
       happiness: 50,
       currentFragments: INITIAL_FRAGMENTS,
+      roundStartFragments: INITIAL_FRAGMENTS,
       history: [],
       status: 'start',
     });
     setEndingText('');
   };
 
+  const isOrderChanged = JSON.stringify(gameState.currentFragments) !== JSON.stringify(gameState.roundStartFragments);
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 flex flex-col items-center p-4 sm:p-8">
       <div className="max-w-2xl w-full">
-        {/* Header */}
         <header className="mb-12 text-center">
           <h1 className="text-4xl sm:text-5xl font-light serif mb-4 tracking-tighter text-pink-100">
             Fragments of Her Heart
@@ -121,11 +142,10 @@ const App: React.FC = () => {
         {gameState.status === 'start' && (
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-2xl text-center space-y-6 animate-in fade-in duration-1000">
             <p className="serif text-xl leading-relaxed italic text-slate-300">
-              "My thoughts are shattered glass, catching the light in ways I don't understand. If I could just arrange them correctly, perhaps the picture of my life would finally make sense..."
+              "My thoughts are shattered glass... some pieces are so sharp, so heavy, I cannot move them at all."
             </p>
             <div className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              Arrange her internal monologue to guide her through romantic distress. 
-              The order of her thoughts determines her emotional fate.
+              Reorder her monologue to guide her fate. Note that some thoughts are <b>anchored</b>—they cannot be moved until her perspective shifts.
             </div>
             <button 
               onClick={startGame}
@@ -138,7 +158,6 @@ const App: React.FC = () => {
 
         {(gameState.status === 'playing' || gameState.status === 'loading') && (
           <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700">
-            {/* Happiness Meter */}
             <div className="relative pt-6">
               <div className="flex justify-between text-xs text-slate-500 uppercase tracking-widest mb-2 font-semibold">
                 <span>Despair</span>
@@ -157,14 +176,27 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Current Fragments Area */}
             <div className="space-y-4">
-              <p className="text-slate-400 text-sm italic mb-4">Reorder her current thoughts:</p>
+              <div className="flex justify-between items-end mb-4">
+                <p className="text-slate-400 text-sm italic">Reorder her thoughts around the anchored ones:</p>
+                <button
+                  onClick={handleResetOrder}
+                  disabled={!isOrderChanged || gameState.status === 'loading'}
+                  className={`text-[10px] uppercase tracking-widest transition-all px-3 py-1 rounded border
+                    ${!isOrderChanged || gameState.status === 'loading'
+                      ? 'border-slate-800 text-slate-700 cursor-not-allowed'
+                      : 'border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500'
+                    }`}
+                >
+                  Reset Order
+                </button>
+              </div>
               <div className="min-h-[300px]">
                 {gameState.currentFragments.map((frag, idx) => (
                   <FragmentCard 
-                    key={`${frag}-${idx}`}
-                    text={frag}
+                    key={`${frag.text}-${idx}`}
+                    text={frag.text}
+                    isFixed={frag.isFixed}
                     index={idx}
                     onDragStart={handleDragStart}
                     onDragEnter={handleDragEnter}
@@ -191,11 +223,10 @@ const App: React.FC = () => {
                     </svg>
                     Interpreting...
                   </div>
-                ) : 'Submit Thoughts'}
+                ) : 'Submit Sequence'}
               </button>
             </div>
 
-            {/* Narrative Interpretation */}
             {gameState.lastInterpretation && (
               <div className="p-4 bg-slate-900/60 border-l-4 border-pink-500 italic text-slate-400 text-sm leading-relaxed serif animate-in fade-in duration-500">
                 {gameState.lastInterpretation}
@@ -226,9 +257,6 @@ const App: React.FC = () => {
               >
                 Reflect Again
               </button>
-              <div className="text-slate-600 text-xs uppercase tracking-widest pt-8">
-                Final Happiness: {gameState.happiness}
-              </div>
             </div>
           </div>
         )}
