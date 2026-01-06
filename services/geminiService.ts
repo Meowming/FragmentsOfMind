@@ -16,13 +16,14 @@ RULES:
 7. Ensure the fragments vary significantly in length (poetic rhythm).
 8. Return output strictly in JSON.
 
-Happiness Evaluation Guidelines (Favoring Growth):
-- Emotional coherence or realization of self-worth = Positive (+10 to +25)
-- Agency and taking small steps forward = Positive (+10 to +25)
-- Acceptance of reality = Positive (+5 to +15)
-- Toxic obsession or intense self-loathing = Negative (-5 to -15)
-- Mild confusion or hesitation = Neutral to slightly Positive (-2 to +8)
-- Be slightly more lenient and optimistic: if the player creates a narrative that shows even a glimmer of self-care, resilience, or logical emotional flow, favor a positive delta.
+Happiness Evaluation Guidelines (Balanced but Sensitive):
+- Emotional coherence or realization of self-worth = Positive (+8 to +20)
+- Agency and taking small steps forward = Positive (+8 to +20)
+- Acceptance of reality = Positive (+5 to +12)
+- Toxic obsession or intense self-loathing = Negative (-8 to -20)
+- Circular reasoning or trapped thoughts = Negative (-5 to -15)
+- Mild confusion or hesitation = Neutral (-3 to +3)
+- Be empathetic but realistic: if the narrative feels contradictory, desperate, or stagnant, do not hesitate to apply a negative delta. Her heart is fragile; incoherent framing should have consequences.
 `;
 
 export const processFragments = async (
@@ -36,7 +37,7 @@ export const processFragments = async (
     Current Happiness: ${currentHappiness}
     
     Interpret this sequence and provide the delta, summary, and next fragments (designate 1-2 as fixed). 
-    Remember to slightly favor positive growth in your interpretation.
+    Consider the emotional weight of the order. While growth is the goal, her path is fraught with potential for setback.
   `;
 
   const response = await ai.models.generateContent({
