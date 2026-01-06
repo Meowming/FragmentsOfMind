@@ -6,10 +6,10 @@ import { FragmentCard } from './components/FragmentCard';
 import { NarrativeLog } from './components/NarrativeLog';
 
 const INITIAL_FRAGMENTS: Fragment[] = [
-  { text: "He hasn't called.", isFixed: false },
-  { text: "I know I should be stronger than this, yet I find myself checking my phone every time the wind rattles the windowpane.", isFixed: true },
-  { text: "Strength is just a lie I tell my mirror before the sun goes down.", isFixed: false },
-  { text: "Maybe he's just busy.", isFixed: false },
+  { text: "I picked up my phone and finally typed: 'I'm sorry about last night.'", isFixed: false },
+  { text: "I know I should be stronger than this, yet I find myself checking the window every time a car slows down outside.", isFixed: true },
+  { text: "I walked all the way to his street, just to stand near his door for a moment.", isFixed: false },
+  { text: "I tucked a small note into his mailbox, the paper damp with the coming mist.", isFixed: false },
   { text: "I wonder if the cold coffee on my desk tastes like the regret I'm trying so hard not to swallow.", isFixed: true }
 ];
 
@@ -142,10 +142,10 @@ const App: React.FC = () => {
         {gameState.status === 'start' && (
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-2xl text-center space-y-6 animate-in fade-in duration-1000">
             <p className="serif text-xl leading-relaxed italic text-slate-300">
-              "My thoughts are shattered glass... some pieces are so sharp, so heavy, I cannot move them at all."
+              "My actions feel like echoes... some are so heavy I can only hope he hears them."
             </p>
             <div className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              Reorder her monologue to guide her fate. Note that some thoughts are <b>anchored</b>—they cannot be moved until her perspective shifts.
+              Reorder her <b>actions toward him</b> and her internal thoughts to guide their fate. Some moments are <b>anchored</b> and cannot be moved until the situation shifts.
             </div>
             <button 
               onClick={startGame}
@@ -197,7 +197,7 @@ const App: React.FC = () => {
                     : 'bg-white text-slate-900 hover:bg-pink-50 hover:text-pink-600'
                   }`}
               >
-                {gameState.status === 'loading' ? 'Interpreting Soul...' : 'Commit the Thought'}
+                {gameState.status === 'loading' ? 'Interpreting Soul...' : 'Commit the Sequence'}
               </button>
               
               <button
@@ -211,7 +211,7 @@ const App: React.FC = () => {
 
             {gameState.lastInterpretation && (
               <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Last Realization</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Impact on Relationship</p>
                 <p className="text-slate-400 text-sm italic leading-relaxed">
                   {gameState.lastInterpretation}
                 </p>
@@ -225,7 +225,7 @@ const App: React.FC = () => {
         {(gameState.status === 'victory' || gameState.status === 'failure') && (
           <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl space-y-8 text-center">
             <h2 className={`text-3xl serif ${gameState.status === 'victory' ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {gameState.status === 'victory' ? 'Closure' : 'Desolation'}
+              {gameState.status === 'victory' ? 'Resolution' : 'Severance'}
             </h2>
             <div className="serif text-lg leading-relaxed text-slate-300 italic whitespace-pre-wrap">
               {endingText}
