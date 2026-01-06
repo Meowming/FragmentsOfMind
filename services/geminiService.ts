@@ -2,8 +2,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeminiResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
 const SYSTEM_INSTRUCTION = `
 You are the narrative engine for "Fragments of Her Heart", a text-manipulation game.
 The player influences a love-stricken protagonist's fate by reordering her fragmented thoughts.
@@ -23,6 +21,8 @@ export const processFragments = async (
   fragments: string[],
   currentHappiness: number
 ): Promise<GeminiResponse> => {
+  // Creating a new instance right before the call to ensure the latest API key is used
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
     Ordered Sequence: ${fragments.join(" -> ")}
     Current Happiness: ${currentHappiness}
@@ -67,10 +67,16 @@ export const getEndingNarrative = async (
   isVictory: boolean,
   history: any[]
 ): Promise<string> => {
+  // Creating a new instance right before the call to ensure the latest API key is used
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
     The game has ended in ${isVictory ? 'Victory' : 'Failure'}.
     Summary: ${JSON.stringify(history.slice(-3))}
     Write a concluding narrative paragraph (approx 100 words).
+    ${isVictory 
+      ? "The protagonist has successfully fixed her relationship with the man she loves. They have reconciled deeply and decided to live together. Describe their warm, shared future and the strength of their renewed bond." 
+      : "Describe her emotional collapse or a destructive choice where she loses him forever."
+    }
   `;
 
   const response = await ai.models.generateContent({
@@ -81,5 +87,5 @@ export const getEndingNarrative = async (
     }
   });
 
-  return response.text || "The story concludes...";
+  return response.text || (isVictory ? "They finally stood together, their hearts whole once more." : "The story concludes in silence...");
 };

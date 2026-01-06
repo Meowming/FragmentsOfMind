@@ -158,78 +158,63 @@ const App: React.FC = () => {
 
         {(gameState.status === 'playing' || gameState.status === 'loading') && (
           <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700">
-            <div className="relative pt-6">
-              <div className="flex justify-between text-xs text-slate-500 uppercase tracking-widest mb-2 font-semibold">
-                <span>Despair</span>
-                <span>Happiness</span>
-                <span>Stability</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-end">
+                <span className="text-xs uppercase tracking-widest text-slate-500 font-medium">Heart Resonance</span>
+                <span className={`text-2xl font-light serif ${gameState.happiness > 70 ? 'text-pink-400' : gameState.happiness < 30 ? 'text-rose-500' : 'text-slate-300'}`}>
+                  {gameState.happiness}%
+                </span>
               </div>
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-1000 ease-out ${gameState.happiness > 70 ? 'bg-emerald-500' : gameState.happiness > 30 ? 'bg-pink-500' : 'bg-rose-600'}`}
+                  className={`h-full transition-all duration-1000 ease-out ${gameState.happiness > 70 ? 'bg-pink-500' : gameState.happiness < 30 ? 'bg-rose-600' : 'bg-slate-400'}`}
                   style={{ width: `${gameState.happiness}%` }}
                 ></div>
               </div>
-              <div className="text-center mt-2">
-                <span className="text-2xl font-light text-slate-100">{gameState.happiness}</span>
-                <span className="text-slate-600 ml-1">/ 100</span>
-              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-end mb-4">
-                <p className="text-slate-400 text-sm italic">Reorder her thoughts around the anchored ones:</p>
-                <button
-                  onClick={handleResetOrder}
-                  disabled={!isOrderChanged || gameState.status === 'loading'}
-                  className={`text-[10px] uppercase tracking-widest transition-all px-3 py-1 rounded border
-                    ${!isOrderChanged || gameState.status === 'loading'
-                      ? 'border-slate-800 text-slate-700 cursor-not-allowed'
-                      : 'border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500'
-                    }`}
-                >
-                  Reset Order
-                </button>
-              </div>
-              <div className="min-h-[300px]">
-                {gameState.currentFragments.map((frag, idx) => (
-                  <FragmentCard 
-                    key={`${frag.text}-${idx}`}
-                    text={frag.text}
-                    isFixed={frag.isFixed}
-                    index={idx}
-                    onDragStart={handleDragStart}
-                    onDragEnter={handleDragEnter}
-                    onDragEnd={handleDragEnd}
-                  />
-                ))}
-              </div>
+            <div className="space-y-1">
+              {gameState.currentFragments.map((fragment, idx) => (
+                <FragmentCard
+                  key={`${idx}-${fragment.text.substring(0, 10)}`}
+                  text={fragment.text}
+                  index={idx}
+                  isFixed={fragment.isFixed}
+                  onDragStart={handleDragStart}
+                  onDragEnter={handleDragEnter}
+                  onDragEnd={handleDragEnd}
+                />
+              ))}
             </div>
 
-            <div className="flex justify-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
-                onClick={handleSubmit}
                 disabled={gameState.status === 'loading'}
-                className={`px-12 py-4 rounded-full font-semibold transition-all shadow-xl
+                onClick={handleSubmit}
+                className={`flex-1 py-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2
                   ${gameState.status === 'loading' 
-                    ? 'bg-slate-700 cursor-not-allowed opacity-50' 
-                    : 'bg-white text-slate-900 hover:bg-pink-50 hover:scale-105'}`}
+                    ? 'bg-slate-800 text-slate-500 cursor-wait' 
+                    : 'bg-white text-slate-900 hover:bg-pink-50 hover:text-pink-600'
+                  }`}
               >
-                {gameState.status === 'loading' ? (
-                  <div className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Interpreting...
-                  </div>
-                ) : 'Submit Sequence'}
+                {gameState.status === 'loading' ? 'Interpreting Soul...' : 'Commit the Thought'}
+              </button>
+              
+              <button
+                disabled={gameState.status === 'loading' || !isOrderChanged}
+                onClick={handleResetOrder}
+                className="px-6 py-4 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Reset Sequence
               </button>
             </div>
 
             {gameState.lastInterpretation && (
-              <div className="p-4 bg-slate-900/60 border-l-4 border-pink-500 italic text-slate-400 text-sm leading-relaxed serif animate-in fade-in duration-500">
-                {gameState.lastInterpretation}
+              <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Last Realization</p>
+                <p className="text-slate-400 text-sm italic leading-relaxed">
+                  {gameState.lastInterpretation}
+                </p>
               </div>
             )}
 
@@ -238,33 +223,22 @@ const App: React.FC = () => {
         )}
 
         {(gameState.status === 'victory' || gameState.status === 'failure') && (
-          <div className="space-y-8 text-center animate-in zoom-in-95 duration-1000">
-            <h2 className={`text-3xl serif font-light ${gameState.status === 'victory' ? 'text-emerald-400' : 'text-rose-500'}`}>
-              {gameState.status === 'victory' ? 'A Heart Resolved' : 'A Heart Shattered'}
+          <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl space-y-8 text-center">
+            <h2 className={`text-3xl serif ${gameState.status === 'victory' ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {gameState.status === 'victory' ? 'Closure' : 'Desolation'}
             </h2>
-            
-            <div className="bg-slate-900/40 p-10 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden">
-               <div className={`absolute top-0 left-0 right-0 h-1 ${gameState.status === 'victory' ? 'bg-emerald-500' : 'bg-rose-600'}`}></div>
-               <p className="serif text-xl sm:text-2xl leading-relaxed text-slate-200 italic">
-                {endingText || "The story concludes..."}
-               </p>
+            <div className="serif text-lg leading-relaxed text-slate-300 italic whitespace-pre-wrap">
+              {endingText}
             </div>
-
-            <div className="space-y-4">
-              <button 
-                onClick={resetGame}
-                className="px-10 py-3 border border-slate-700 hover:bg-slate-800 rounded-full transition-colors text-slate-400"
-              >
-                Reflect Again
-              </button>
-            </div>
+            <button 
+              onClick={resetGame}
+              className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full transition-all"
+            >
+              Restart the Cycle
+            </button>
           </div>
         )}
       </div>
-
-      <footer className="mt-auto py-8 text-slate-600 text-[10px] uppercase tracking-widest text-center">
-        &copy; {new Date().getFullYear()} Fragments of Her Heart • A Text Manipulation Experience
-      </footer>
     </div>
   );
 };
