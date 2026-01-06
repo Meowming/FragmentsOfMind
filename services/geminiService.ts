@@ -15,6 +15,14 @@ RULES:
 6. Anchors should ideally be the longer, more descriptive, or more overwhelming thoughts.
 7. Ensure the fragments vary significantly in length (poetic rhythm).
 8. Return output strictly in JSON.
+
+Happiness Evaluation Guidelines (Favoring Growth):
+- Emotional coherence or realization of self-worth = Positive (+10 to +25)
+- Agency and taking small steps forward = Positive (+10 to +25)
+- Acceptance of reality = Positive (+5 to +15)
+- Toxic obsession or intense self-loathing = Negative (-5 to -15)
+- Mild confusion or hesitation = Neutral to slightly Positive (-2 to +8)
+- Be slightly more lenient and optimistic: if the player creates a narrative that shows even a glimmer of self-care, resilience, or logical emotional flow, favor a positive delta.
 `;
 
 export const processFragments = async (
@@ -27,7 +35,8 @@ export const processFragments = async (
     Ordered Sequence: ${fragments.join(" -> ")}
     Current Happiness: ${currentHappiness}
     
-    Interpret this sequence and provide the delta, summary, and next fragments (designate 1-2 as fixed).
+    Interpret this sequence and provide the delta, summary, and next fragments (designate 1-2 as fixed). 
+    Remember to slightly favor positive growth in your interpretation.
   `;
 
   const response = await ai.models.generateContent({
