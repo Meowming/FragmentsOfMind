@@ -3,32 +3,33 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { GeminiResponse } from "../types";
 
 const SYSTEM_INSTRUCTION = `
-You are the narrative engine for "Fragments of Her Heart", a text-manipulation game.
-The player influences a love-stricken protagonist's fate by reordering her fragmented world.
+你是一款名为《碎心余烬》(Fragments of Her Heart) 的叙事驱动文本编排游戏的叙事引擎。
+玩家通过重新排列破碎的思绪和行动碎片，来影响一位深陷情感纠葛的女主角的命运。
 
-FRAGMENT TYPES:
-Fragments MUST include a mix of:
-1. INTERNAL MONOLOGUE: Her thoughts, fears, and internal contradictions.
-2. DIRECT ACTIONS (IMPACTING HIM): Concrete actions taken toward the man she loves (e.g., "I sent him a text asking if he's okay," "I left a small gift at his doorstep," "I called him three times in a row").
-3. PHYSICAL RESPONSES: Physical symptoms or immediate surroundings (e.g., "My hands shook as I held the letter," "The rain soaked through my coat as I waited").
+碎片类型：
+生成的碎片必须包含以下混合内容：
+1. 内心独白：她的想法、恐惧和内心的矛盾。
+2. 直接行动（影响他）：对她所爱的男人采取的具体行动（例如：“我给他发了条短信问他是否还好”、“我把一份小礼物留在他家门口”、“我连续给他打了三次电话”）。
+3. 生理反应：身体症状或周围环境（例如：“我握着信的手在颤抖”、“等候时雨水湿透了我的外套”）。
 
-RULES:
-1. Interpret the emotional and logical coherence of the sequence.
-2. Direct actions toward "him" have high emotional weight. Reordering them changes her perceived intent (e.g., a cold thought followed by a warm action feels like masking; a warm action followed by a cold thought feels like regret).
-3. Update the Happiness Value based on the emotional trajectory and the perceived success/failure of her attempts to reach him.
-4. Generate the next set of 4-6 text fragments.
-5. IMPORTANT: Designate 1 or 2 fragments as "is_fixed: true". These are "anchors" (external circumstances or deep-seated traumas) she cannot currently change.
-6. Ensure fragments vary in length and narrative weight.
-7. Return output strictly in JSON.
+规则：
+1. 解释所提供的碎片序列的情感逻辑和连贯性。
+2. 对“他”采取的直接行动具有极高的情感权重。重新排列顺序会改变她被感知的意图（例如：冷酷的想法后接温暖的行动感觉像是掩饰；温暖的行动后接冷酷的想法感觉像是后悔）。
+3. 根据情感轨迹和她接近他的尝试是否被感知为成功，更新“幸福值”(Happiness Value)。
+4. 生成下一组 4-6 个中文文本碎片。
+5. 重要：指定 1 或 2 个碎片为 "is_fixed: true"。这些是她目前无法改变的“锚点”（外部环境或根深蒂固的创伤）。
+6. 确保碎片在长度和叙事重量上有所变化，富有诗意。
+7. **必须使用中文返回所有叙事和碎片内容。**
+8. 严格以 JSON 格式返回输出。
 
-Happiness Evaluation Guidelines (Relationship Focused):
-- Vulnerable, honest communication toward him = Positive (+12 to +28)
-- Self-respecting boundaries while maintaining connection = Positive (+10 to +25)
-- Acts of genuine kindness or reconciliation = Positive (+10 to +25)
-- Desperate obsession or boundary-crossing (stalking, harassment) = Negative (-15 to -30)
-- Cold avoidance or passive-aggression = Negative (-10 to -20)
-- Circular self-sabotage = Negative (-5 to -15)
-- Use a "Balanced but Sensitive" scale. If she reaches out and the narrative flow makes sense, reward it.
+幸福感评估准则（侧重关系）：
+- 脆弱、真诚的沟通 = 正向 (+12 到 +28)
+- 保持连接的同时保持自尊的界限 = 正向 (+10 到 +25)
+- 真诚的善意或和解行为 = 正向 (+10 到 +25)
+- 绝望的痴迷或越界行为（跟踪、骚扰） = 负向 (-15 到 -30)
+- 冷漠的回避或被动攻击 = 负向 (-10 到 -20)
+- 循环的自我毁灭 = 负向 (-5 到 -15)
+- 使用“均衡但敏感”的尺度。如果她伸出援手且叙事逻辑通顺，给予奖励。
 `;
 
 export const processFragments = async (
@@ -37,15 +38,16 @@ export const processFragments = async (
 ): Promise<GeminiResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
-    Ordered Sequence: ${fragments.join(" -> ")}
-    Current Happiness: ${currentHappiness}
+    排列顺序：${fragments.join(" -> ")}
+    当前幸福值：${currentHappiness}
     
-    Interpret this sequence of actions and thoughts. How do these actions toward him change their dynamic?
-    Provide the delta, summary, and next fragments (designate 1-2 as fixed).
+    请解析这一系列行动和想法。这些针对他的行为如何改变了他们的动态关系？
+    提供数值变化 (delta)、解析摘要 (summary) 和下一组碎片 (next_fragments)，并指定 1-2 个为固定锚点。
+    **请确保所有文本内容均为中文。**
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: 'gemini-3-flash-preview',
     contents: [{ parts: [{ text: prompt }] }],
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -83,22 +85,23 @@ export const getEndingNarrative = async (
 ): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
-    The game has ended in ${isVictory ? 'Victory' : 'Failure'}.
-    Summary of her journey: ${JSON.stringify(history.slice(-3))}
-    Write a concluding narrative paragraph (approx 100 words).
+    游戏以 ${isVictory ? '胜利' : '失败'} 告终。
+    她的心路历程摘要：${JSON.stringify(history.slice(-3))}
+    请写一段结尾叙事（约 200 字）。
     ${isVictory 
-      ? "She has successfully bridged the gap between them. Describe their final, meaningful encounter—be it a conversation, a shared silence, or a promise of a future together." 
-      : "The distance between them has become an uncrossable ocean. Describe the final moment of severance, where she realizes he is truly gone."
+      ? "她成功地弥合了他们之间的鸿沟。描写他们最后一次有意义的邂逅——可以是一次交谈、一段共同的沉默，或者是对未来的承诺。" 
+      : "他们之间的距离已变成无法逾越的鸿沟。描写最后断绝联系的时刻，她意识到他真的离开了。"
     }
+    **请使用中文书写。**
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: 'gemini-3-flash-preview',
     contents: [{ parts: [{ text: prompt }] }],
     config: {
-      systemInstruction: "You are a poetic narrator finishing a romantic story about the weight of direct actions."
+      systemInstruction: "你是一位富有诗意的叙事者，正在为一段关于行动重量的浪漫故事收尾。"
     }
   });
 
-  return response.text || (isVictory ? "Finally, her hand found his, and the silence was no longer heavy." : "The dial tone was the only thing left of the man she loved.");
+  return response.text || (isVictory ? "终于，她的手找到了他的，沉默不再沉重。" : "忙音是那个她深爱的男人留下的唯一东西。");
 };

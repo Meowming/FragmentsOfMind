@@ -49,7 +49,7 @@ export const FragmentCard: React.FC<FragmentCardProps> = ({
 
       {isFixed && (
         <div className="mt-2 text-[10px] uppercase tracking-tighter text-slate-600 font-bold">
-          Anchored Thought
+          锚定碎片
         </div>
       )}
     </div>
